@@ -46,10 +46,6 @@ String watch = rtc.getTime("%d%b %H:%M:%S");
 const char* wifi_network_ssid = "Hydroponics Access Point";
 const char* wifi_network_password =  "57790855";
 
-//const char* wifi_network_ssid = "BotFI";
-//const char* wifi_network_password =  "Password sa baba.";
-
-
 const char *soft_ap_ssid = "Hydroponics_Automated";
 const char *soft_ap_password = "testpassword";
 
