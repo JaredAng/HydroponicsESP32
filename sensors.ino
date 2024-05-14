@@ -6,27 +6,29 @@ void connectToWifi()
   IPAddress primaryDNS(192, 168, 1, 1); // Primary DNS (optional)
   IPAddress secondaryDNS(0, 0, 0, 0);   // Secondary DNS (optional)
 
-  WiFi.setHostname(String("controller1").c_str());
   WiFi.enableSTA(true);
   delay(500);
 
   WiFi.begin(wifi_network_ssid, wifi_network_password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  // Configuring static IP
-  if (!WiFi.config(staticIP, gateway, subnet, primaryDNS, secondaryDNS)) {
-    Serial.println("Failed to configure Static IP");
-  } else {
-    Serial.println("Static IP configured!");
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(100);
+      Serial.print(".");
+    }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("");
+    Serial.println("WiFi connected");
+    // Configuring static IP
+    if (!WiFi.config(staticIP, gateway, subnet, primaryDNS, secondaryDNS)) {
+      Serial.println("Failed to configure Static IP");
+    } else {
+      Serial.println("Static IP configured!");
+    }
+
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
   }
 
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
 }
 
 String readDSTemperatureC() {
@@ -99,6 +101,7 @@ String readTDS() {
     //convert voltage value to tds value
     tdsValue = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 0.5;
   }
+  tdsValue *= 2.5;
   Serial.print("Voltage: ");
   Serial.print(averageVoltage);
   Serial.print("V\t");
@@ -110,7 +113,7 @@ String readTDS() {
 
 //https://www.electroniclinic.com/esp32-ph-sensor-iot-ph-sensor-code-and-circuit-diagram/
 String readPHLevel() {
-  float calibration_value = 21.34 - 0.9;  //20.24 - 0.7;
+  float calibration_value = 19.00f;  //20.24 - 0.7;
   int buffer_arr[10], temp = 0;
   unsigned long int avgval = 0;
   for (int i = 0; i < 10; i++)
@@ -132,8 +135,8 @@ String readPHLevel() {
   }
   for (int i = 2; i < 8; i++)
     avgval += buffer_arr[i];
-  float volt = (float)avgval * 3.3 / 4096.0 / 6;
-  ph_act = -5.70 * volt + calibration_value;
+  float volt = ((float)avgval / 6) * 3.3 / 4096.0;
+  ph_act = -7.05 * volt + calibration_value;
 
   Serial.print("pH Val: ");
   Serial.print(ph_act);
@@ -175,7 +178,7 @@ bool file_available(fs::FS &fs, String filePath) {
   }
   watch = rtc.getTime("%d%B%Y %H:%M:%S");
   message = watch + " Logging initiated...\ntimeStamp,tempC,EC,pH";
-//  message = "File Found";
+  //  message = "File Found";
   Serial.println(message);
   return true;
 }

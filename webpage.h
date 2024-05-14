@@ -75,7 +75,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   <br>
   <table>
     <tr>
-      <td colspan = '3'>Electrical Conductivity (<span class="units">ppm</span>)</td>
+      <td colspan = '3'>Total Dissolve Solids (<span class="units">ppm</span>)</td>
     </tr>
     <tr>      
       <th>LW Limit</th>
@@ -113,7 +113,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <tr>
       <th>Acid</th>
       <th>Base</th>
-      <th>Nutirents</th>
+      <th>Nutrients</th>
     </tr>
     <tr>
       <td><span id="solenoid1">%solenoid1%</span> </td>
@@ -133,16 +133,16 @@ const char index_html[] PROGMEM = R"rawliteral(
     </tr>
     <tr class = "formTBL">
       <form action="/" method = 'POST'>
-        <td><label>EC (ppm)</label></td>
-        <td><input type = 'number' name = 'ecLimitLW' id = 'ecLimitLWIN' min = 0 step = 0.01 max = 1000000 placeholder="1200.0"></td>
-        <td><input type = 'number' name = 'ecLimitUP' id = 'ecLimitUPIN' min = 0 step = 0.01 max = 1000 placeholder="1400.0"></td>
+        <td><label>TDS (ppm)</label></td>
+        <td><input type = 'number' name = 'ecLimitLW' id = 'ecLimitLWIN' min = 0 step = 0.01 placeholder="1200.0"></td>
+        <td><input type = 'number' name = 'ecLimitUP' id = 'ecLimitUPIN' min = 0 step = 0.01 placeholder="1400.0"></td>
         <td><button type='submit' value='Submit'>Set EC</button></td>
       </form>
     </tr>
     <tr class = "formTBL">
       <form action="/" method = 'POST'>
         <td><label>Acidity (pH)</label></td>
-        <td><input type = 'number' name = 'phLimitLW' id = 'phLimitlWIN' min = 0 step = 0.01 max = 100 placeholder="5.8"></td>
+        <td><input type = 'number' name = 'phLimitLW' id = 'phLimitlWIN' min = 0 step = 0.01 max = 100 placeholder="5.6"></td>
         <td><input type = 'number' name = 'phLimitUP' id = 'phLimitUPIN' min = 0 step = 0.01 max = 100 placeholder="6.3" ></td>
         <td><button type='submit' value='Submit'>Set pH</button></td>
       </form>

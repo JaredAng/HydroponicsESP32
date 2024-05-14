@@ -27,6 +27,7 @@ DallasTemperature sensors(&oneWire);
 //pH Sensor
 #define phPIN 35
 float ph_act = 0.0f;
+//int buffer_index = 0, buffer_arr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, temp = 0;
 
 //SD Card
 #define SCK  14
@@ -36,7 +37,7 @@ float ph_act = 0.0f;
 //Generic variables
 String filePath = "/data.txt";
 
-unsigned long time_sec = 1713601608; // epoch time
+unsigned long time_sec = 1714247798; // epoch time
 ESP32Time rtc(3600 * 8); // offset in seconds GMT+8
 int timer = 15;
 String watch = rtc.getTime("%d%b %H:%M:%S");
@@ -44,6 +45,10 @@ String watch = rtc.getTime("%d%b %H:%M:%S");
 //Network
 const char* wifi_network_ssid = "Hydroponics Access Point";
 const char* wifi_network_password =  "57790855";
+
+//const char* wifi_network_ssid = "BotFI";
+//const char* wifi_network_password =  "Password sa baba.";
+
 
 const char *soft_ap_ssid = "Hydroponics_Automated";
 const char *soft_ap_password = "testpassword";
@@ -165,14 +170,15 @@ void setup() {
   pinMode(solenoid3, OUTPUT);
   pinMode(powerSensor, OUTPUT);
 
-  digitalWrite(solenoid1, LOW);
-  digitalWrite(solenoid2, LOW);
-  digitalWrite(solenoid3, LOW);
-  digitalWrite(powerSensor, LOW);
+  digitalWrite(solenoid1, HIGH);
+  digitalWrite(solenoid2, HIGH);
+  digitalWrite(solenoid3, HIGH);
+  digitalWrite(powerSensor, HIGH);
   delay(50);
 }
 
 void loop() {
+
   //TDS
   if (millis() - TDSreaderTimer > 800 && isTDS_on) {
     TDSreaderTimer = millis();
@@ -184,16 +190,15 @@ void loop() {
     get_analogSampleTimepoint();
   }
   //TDS
-
-  if (millis() - phLevelTimer > 1000 && !isTDS_on) {
+  if (millis() - phLevelTimer > 600 && !isTDS_on) {
     phLevelTimer = millis();
     pH = readPHLevel();
-    //    isTDS_on = true;
   }
 
-  if (millis() - SwitchSensorTimer_on > 2000 && !isTDS_on) {
-    SwitchSensorTimer_on = millis();
+  if (millis() - SwitchSensorTimer_off > 2000 && !isTDS_on) {
+//    SwitchSensorTimer_on = millis();
     isTDS_on = true;
+//     pH = readPHLevel();
     digitalWrite(powerSensor, HIGH);
   }
   if (millis() - SwitchSensorTimer_off > delay_Relay && isTDS_on) {
@@ -207,13 +212,13 @@ void loop() {
     temperatureC = readDSTemperatureC();
   }
 
-  if (phLimitLW.toFloat() <= pH.toFloat() && pH.toFloat() <= phLimitUP.toFloat()) {
+  if (phLimitLW.toFloat() <= ph_act && ph_act <= phLimitUP.toFloat()) {
     solenoid[0] = "False";
     solenoid[1] = "False";
-  } else if (pH.toFloat() > phLimitUP.toFloat()) {
+  } else if (ph_act > phLimitUP.toFloat()) {
     solenoid[0] = "False";
     solenoid[1] = "True";
-  } else if (pH.toFloat() < phLimitLW.toFloat()) {
+  } else if (ph_act < phLimitLW.toFloat()) {
     solenoid[0] = "True";
     solenoid[1] = "False";
   }
@@ -224,71 +229,35 @@ void loop() {
     solenoid[2] = "True";
   }
 
-//  if (solenoid[0] == "True") {
-//    if (millis() - SwitchAcidTimer_on >  2000 ) {
-//      SwitchAcidTimer_on = millis();
-//      digitalWrite(solenoid1, HIGH);
-//    } else if (millis() - SwitchAcidTimer_off >  delay_Relay) {
-//      SwitchAcidTimer_off = millis();
-//      digitalWrite(solenoid1, LOW);
-//    }
-//  } else if (solenoid[0] == "False") {
-//    digitalWrite(solenoid1, HIGH);
-//  }
-//
-//  if (solenoid[1] == "True") {
-//    if (millis() - SwitchBaseTimer_on >  2000 ) {
-//      SwitchBaseTimer_on = millis();
-//      digitalWrite(solenoid2, HIGH);
-//    } else if (millis() - SwitchBaseTimer_off >  delay_Relay) {
-//      SwitchBaseTimer_off = millis();
-//      digitalWrite(solenoid2, LOW);
-//    }
-//  } else if (solenoid[1] == "False") {
-//    digitalWrite(solenoid2, HIGH);
-//  }
-//
-//    if (solenoid[2] == "True") {
-//    if (millis() - SwitchNutrientTimer_on >  2000 ) {
-//      SwitchNutrientTimer_on = millis();
-//      digitalWrite(solenoid3, HIGH);
-//    } else if (millis() - SwitchNutrientTimer_off >  delay_Relay) {
-//      SwitchNutrientTimer_off = millis();
-//      digitalWrite(solenoid2, LOW);
-//    }
-//  } else if (solenoid[2] == "False") {
-//    digitalWrite(solenoid3, HIGH);
-//  }
+  if (millis() - SwitchAcidTimer_on > 2000 && solenoid[0] == "False") {
+    SwitchAcidTimer_on = millis();
+    digitalWrite(solenoid1, HIGH);
+    solenoid[0] = "True";
+  } else if (millis() - SwitchAcidTimer_off >  delay_Relay && solenoid[0] == "True") {
+    SwitchAcidTimer_off = millis();
+    digitalWrite(solenoid1, LOW);
+    solenoid[0] = "False";
+  }
 
-    if (millis() - SwitchAcidTimer_on > 2000 && solenoid[0] == "False") {
-      SwitchAcidTimer_on = millis();
-      digitalWrite(solenoid1, HIGH);
-      solenoid[0] = "True";
-    } else if (millis() - SwitchAcidTimer_off >  delay_Relay && solenoid[0] == "True") {
-      SwitchAcidTimer_off = millis();
-      digitalWrite(solenoid1, LOW);
-      solenoid[0] = "False";
-    }
-  
-    if (millis() - SwitchBaseTimer_on >  2000 && solenoid[1] == "False") {
-      SwitchBaseTimer_on = millis();
-      digitalWrite(solenoid2, HIGH);
-      solenoid[1] = "True";
-    } else if (millis() - SwitchBaseTimer_off >  delay_Relay && solenoid[1] == "True") {
-      SwitchBaseTimer_off = millis();
-      digitalWrite(solenoid2, LOW);
-      solenoid[1] = "False";
-    }
-  
-    if (millis() - SwitchNutrientTimer_on >  2000 && solenoid[2] == "False") {
-      SwitchNutrientTimer_on = millis();
-      digitalWrite(solenoid3, HIGH);
-      solenoid[2] = "True";
-    } else if (millis() - SwitchNutrientTimer_off >  delay_Relay && solenoid[2] == "True") {
-      SwitchNutrientTimer_off = millis();
-      digitalWrite(solenoid3, LOW);
-      solenoid[2] = "False";
-    }
+  if (millis() - SwitchBaseTimer_on >  2000 && solenoid[1] == "False") {
+    SwitchBaseTimer_on = millis();
+    digitalWrite(solenoid2, HIGH);
+    solenoid[1] = "True";
+  } else if (millis() - SwitchBaseTimer_off >  delay_Relay && solenoid[1] == "True") {
+    SwitchBaseTimer_off = millis();
+    digitalWrite(solenoid2, LOW);
+    solenoid[1] = "False";
+  }
+
+  if (millis() - SwitchNutrientTimer_on >  2000 && solenoid[2] == "False") {
+    SwitchNutrientTimer_on = millis();
+    digitalWrite(solenoid3, HIGH);
+    solenoid[2] = "True";
+  } else if (millis() - SwitchNutrientTimer_off >  delay_Relay && solenoid[2] == "True") {
+    SwitchNutrientTimer_off = millis();
+    digitalWrite(solenoid3, LOW);
+    solenoid[2] = "False";
+  }
 
   if (millis() - WriteTimer > 5000) {
     WriteTimer = millis();
